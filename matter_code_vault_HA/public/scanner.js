@@ -1,4 +1,4 @@
-// Version: 3.3.2 (Algorithmic Voting Stable)
+// Version: 3.3.3 (Full Integration & Voting Stable)
 
 const VISION_MODEL = "moondream";
 const REASONING_MODEL = "antigravity-model:3b";
@@ -6,7 +6,7 @@ const OLLAMA_PROXY_URL = "api/ai";
 
 let currentVerifiedMt = null;
 
-// --- UTILS ---
+// --- UI UTILS ---
 function showToast(msg) {
     const toast = document.createElement('div');
     toast.className = "fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-full text-xs z-[100] shadow-lg animate-fade-in";
@@ -16,6 +16,7 @@ function showToast(msg) {
 }
 
 function handleInput(val) {
+    if (!val) return;
     const code = val.replace(/-/g, '');
     if (code.length === 11) {
         const formatted = code.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3');
@@ -27,6 +28,38 @@ function handleInput(val) {
     }
 }
 
+// --- MATTER DECODER ---
+function decodeMatterPayload(payload) {
+    if (!payload || !payload.startsWith('MT:')) return null;
+    try {
+        const base38 = payload.substring(3);
+        const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. ";
+        let value = BigInt(0);
+        for (let i = base38.length - 1; i >= 0; i--) {
+            value = value * BigInt(38) + BigInt(alphabet.indexOf(base38[i]));
+        }
+        const bits = value.toString(2).padStart(38, '0');
+        const reversedBits = bits.split('').reverse().join('');
+        
+        return {
+            version: parseInt(reversedBits.substring(0, 3), 2),
+            vid: parseInt(reversedBits.substring(3, 19), 2),
+            pid: parseInt(reversedBits.substring(19, 35), 2),
+            discriminator: parseInt(reversedBits.substring(35, 38) + "000000000", 2) // Simplified
+        };
+    } catch (e) { return null; }
+}
+
+function applyDecodedInfo(info) {
+    if (!info) return;
+    const vidInput = document.getElementById('devVid');
+    if (vidInput) {
+        vidInput.value = info.vid;
+        vidInput.dispatchEvent(new Event('change'));
+    }
+}
+
+// --- IMAGE PROCESSING ---
 async function convertHeicIfNecessary(file) {
     if (file.name.toLowerCase().endsWith('.heic')) {
         showToast("HEIC 변환 중...");
@@ -53,6 +86,63 @@ function resizeImage(file, maxDimension) {
     });
 }
 
+// --- STANDARD SCAN (Camera/OCR) ---
+async function triggerOcrScan() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.onchange = (e) => processOcrImage(e.target.files[0]);
+    input.click();
+}
+
+async function processOcrImage(file) {
+    if (!file) return;
+    showToast("이미지 분석 중...");
+    const convertedFile = await convertHeicIfNecessary(file);
+    
+    try {
+        const qrPromise = new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width; canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    resolve(code ? code.data : null);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(convertedFile);
+        });
+
+        const ocrPromise = Tesseract.recognize(convertedFile, 'eng');
+        const [qrCode, ocrResult] = await Promise.all([qrPromise, ocrPromise]);
+
+        if (qrCode && qrCode.startsWith('MT:')) {
+            document.getElementById('devMtPayload').value = qrCode;
+            document.getElementById('displayMtPayload').value = qrCode;
+            applyDecodedInfo(decodeMatterPayload(qrCode));
+            showToast("QR 인식 성공");
+        }
+
+        const ocrText = ocrResult.data.text;
+        const ocrCode = ocrText.match(/\d{4}-\d{3}-\d{4}/) || ocrText.match(/\d{11}/);
+        if (ocrCode) {
+            handleInput(ocrCode[0]);
+            showToast("페어링 코드 인식 성공");
+        }
+    } catch (e) {
+        console.error(e);
+        showToast("인식 실패");
+    }
+}
+
+// --- AI SCAN (Gallery/Ollama) ---
 async function executeAiAnalysis(base64Data) {
     const modalContent = document.getElementById('modalContent');
     const loadingOverlay = document.createElement('div');
@@ -65,31 +155,28 @@ async function executeAiAnalysis(base64Data) {
         modalContent.appendChild(loadingOverlay);
     }
     
-    showToast("AI 정밀 판독 (Dual Model)...");
-    
     try {
-        // Step 1: Vision Pass (Moondream)
+        // Step 1: Vision Pass
         const visionRes = await fetch(OLLAMA_PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: VISION_MODEL,
-                prompt: "Describe all visible Matter QR codes (starting with MT:) and 11-digit pairing codes in this image. Be precise.",
+                prompt: "Describe all visible Matter QR codes (starting with MT:) and 11-digit pairing codes. Be precise.",
                 images: [base64Data],
                 stream: false,
                 options: { keep_alive: "5m" }
             })
         });
         const visionData = await visionRes.json();
-        const visionText = visionData.response;
-
-        // Step 2: Reasoning Pass (Qwen2.5)
+        
+        // Step 2: Reasoning Pass
         const reasoningRes = await fetch(OLLAMA_PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: REASONING_MODEL,
-                prompt: `Based on the description, extract the Matter QR and the 11-digit code as strict JSON { "mt": "MT:...", "code": "xxxx-xxx-xxxx" }. Description: ${visionText}`,
+                prompt: `Extract Matter QR and 11-digit code as JSON { "mt": "MT:...", "code": "xxxx-xxx-xxxx" }. Description: ${visionData.response}`,
                 stream: false,
                 format: "json",
                 options: { temperature: 0.1, keep_alive: "5m" }
@@ -98,16 +185,14 @@ async function executeAiAnalysis(base64Data) {
         const reasoningData = await reasoningRes.json();
         const info = JSON.parse(reasoningData.response);
 
-        // --- Algorithmic Voting: Cross-Validation for Slashed Zeros (v3.3.2) ---
+        // --- Algorithmic Voting (v3.3.3) ---
         const existingInput = document.getElementById('devPayload');
         if (info.code && existingInput && existingInput.value) {
             const existingCode = existingInput.value.replace(/-/g, '');
             let aiCodeRaw = info.code.replace(/-/g, '');
-
             if (existingCode.length === 11 && aiCodeRaw.length === 11) {
                 let mergedCode = "";
                 for (let i = 0; i < 11; i++) {
-                    // 한쪽이라도 0이고 다른 한쪽이 8이면, Slashed Zero 오인식으로 간주하고 '0' 채택
                     if ((existingCode[i] === '0' && aiCodeRaw[i] === '8') || 
                         (existingCode[i] === '8' && aiCodeRaw[i] === '0')) {
                         mergedCode += '0';
@@ -116,21 +201,17 @@ async function executeAiAnalysis(base64Data) {
                     }
                 }
                 info.code = mergedCode.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3');
-                console.log("[Cross-Validation] Merged Code applied:", info.code);
             }
         }
 
         if (info.code) handleInput(info.code);
         if (info.mt) {
-            currentVerifiedMt = info.mt;
             document.getElementById('devMtPayload').value = info.mt;
             document.getElementById('displayMtPayload').value = info.mt;
-            document.getElementById('qrStatusIcon').classList.remove('hidden');
             applyDecodedInfo(decodeMatterPayload(info.mt));
         }
         showToast("AI 분석 완료");
     } catch (e) {
-        console.error("AI Analysis Error:", e);
         showToast("AI 분석 실패");
     } finally {
         if (modalContent) modalContent.classList.remove('ai-border');
@@ -142,10 +223,16 @@ async function executeAiAnalysis(base64Data) {
 async function processAiImage(event) {
     const originalFile = event.target.files[0]; if (!originalFile) return;
     const file = await convertHeicIfNecessary(originalFile);
-    try { resizeImage(file, 1024).then(url => executeAiAnalysis(url.split(',')[1])); } catch (e) { showToast("처리 실패"); }
+    try { 
+        const url = await resizeImage(file, 1024);
+        executeAiAnalysis(url.split(',')[1]); 
+    } catch (e) { showToast("처리 실패"); }
     event.target.value = '';
 }
 
-// Global Export
+// --- GLOBAL EXPORTS ---
+window.triggerOcrScan = triggerOcrScan;
 window.processAiImage = processAiImage;
 window.executeAiAnalysis = executeAiAnalysis;
+window.processOcrImage = processOcrImage;
+window.decodeMatterPayload = decodeMatterPayload;
