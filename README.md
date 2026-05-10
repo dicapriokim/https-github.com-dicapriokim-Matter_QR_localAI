@@ -1,6 +1,6 @@
-# Matter Code Vault HA (v4.0.0)
+# Matter Code Vault HA (v4.0.1)
 
-> Matter Device Management & QR Code Backup/Restore Tool (v4.0.0)
+> Matter Device Management & QR Code Backup/Restore Tool (v4.0.1)
 
 Matter Code Vault is a powerful Home Assistant add-on designed for seamless Matter device management. Securely back up complex pairing codes and QR codes, and manage them intelligently using AI-driven features.
 
@@ -21,20 +21,20 @@ https://github.com/dicapriokim/Matter-Code-Vault-Pcroom.git
 
 ---
 
-## ✨ Major Core Upgrade (v4.0.0)
+## ✨ Core Formula Hotfix (v4.0.1)
 
 - **Backend AI Proxy**: Integrated backend proxy to resolve Mixed Content (HTTPS -> HTTP) and CORS issues, ensuring stable AI communication in Home Assistant environments.
 - **Dynamic Loading UI**: Soft pulsing "Analyzing..." indicators for AI and standard OCR/QR scans to provide clear visual feedback during processing.
 - **Local AI Engine (Ollama)**: Advanced reasoning using `antigravity-model:3b` for intelligent device naming and OCR error correction.
 - **Modular Architecture**: Optimized modular structure (`state.js`, `ui.js`, `ai.js`, `scanner.js`) for high performance and maintainability.
 - **Dual Storage Vault**: Redundant saving system via HA Backend API and Browser `localStorage`.
-- **Verhoeff Checksum Engine (v4.0.0)**: Mathematically reconstructs 11-digit manual pairing codes from raw QR payload bits with 100% accuracy.
-- **Digital Truth Priority**: Bypasses OCR/AI errors by prioritizing bit-level digital extraction.
+- **Spec 5.1.4.1 Compliance (v4.0.1)**: Precise bitwise manual code calculation for perfect ecosystem compatibility.
+- **Verhoeff Checksum Engine**: Mathematically reconstructs 11-digit manual pairing codes from QR bits.
 - **Label Ready**: High-quality QR generation optimized for thermal label printers.
 
 ---
 
-## 📖 Quick Start Guide (v4.0.0)
+## 📖 Quick Start Guide (v4.0.1)
 
 ### 1. Initial Setup
 Before adding devices, configure your ecosystem in the **[Settings ⚙️]** menu to ensure data consistency:

@@ -147,10 +147,12 @@ function decodeMatterPayload(payload) {
         const discriminator = Number((bigIntValue >> BigInt(45)) & BigInt(0xFFF));
         const setupPin = Number((bigIntValue >> BigInt(57)) & BigInt(0x7FFFFFF));
 
-        // 11자리 수동 코드 연산 (Setup PIN & Short Discriminator)
-        const shortDiscriminator = discriminator >> 8; 
-        const manualCodeValue = (setupPin * 32) + (shortDiscriminator * 2); 
-        const manualCodeStr = String(manualCodeValue).padStart(10, '0');
+        // 11자리 수동 코드 연산 (Matter Spec 5.1.4.1 준수)
+        const digit1 = (discriminator >> 10) & 0x3;
+        const digit2To6 = ((discriminator & 0x3FF) << 14) | (setupPin & 0x3FFF);
+        const digit7To10 = setupPin >> 14;
+
+        const manualCodeStr = `${digit1}${String(digit2To6).padStart(5, '0')}${String(digit7To10).padStart(4, '0')}`;
 
         // Verhoeff Checksum (Check Digit 생성)
         const d = [
