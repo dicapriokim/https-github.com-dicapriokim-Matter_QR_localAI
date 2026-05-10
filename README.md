@@ -36,27 +36,29 @@ https://github.com/dicapriokim/Matter-Code-Vault-Pcroom.git
 ## 📖 Quick Start Guide
 
 ### 1. Initial Setup
-Before adding devices, define your ecosystem in the **[Settings ⚙️]** menu to ensure data consistency:
+Before adding devices, configure your ecosystem in the **[Settings ⚙️]** menu to ensure data consistency:
 - **Locations**: Living Room, Bedroom, Entrance, etc.
 - **Manufacturers**: Aqara, Eve, Nanoleaf, etc.
 - **Platforms**: Apple Home, SmartThings, Home Assistant, etc.
 
-### 2. Adding a Device
-Click the **[+]** button. You can use your camera or upload a photo from your gallery.
-- **AI Suggestion**: Click the 'Magic Wand' icon to receive a recommended name based on device type and location.
-- **Manual Entry**: Pairing codes must be entered as an 11-digit number without hyphens or spaces.
+### 2. Smart Registration & AI
+Click the **[+]** button to add a new device.
+- **AI Recommendation**: Click the 'Magic Wand' icon for AI-generated device names.
+- **Fallback Logic**: If QR scanning fails to extract the pairing code, the system automatically uses OCR data as a backup.
+- **Slashed Zero (0) Correction**: The AI is specifically tuned to distinguish between slashed zeros '0' and the digit '8' in pairing codes.
 
 ---
 
----
+## ⚙️ Configuration (AI Proxy)
 
-## ⚙️ Configuration
+This add-on features a built-in **Backend AI Proxy** to enable stable communication with local AI servers in HTTPS environments.
+1. **Ollama Server**: Ensure your server is running at `http://192.168.0.32:11434`.
+2. **Required Models**:
+   - `moondream` (Vision Pass)
+   - `antigravity-model:3b` (Reasoning Pass)
+3. **Internal Routing**: Requests are proxied via `api/ai` to bypass browser Mixed Content and CORS restrictions.
 
-To enable AI features, ensure your **Ollama** server is running:
-1. Default URL: `http://192.168.0.32:11434` (configurable in `state.js`).
-2. Required Models: `moondream` (Vision), `antigravity-model:3b` (Reasoning).
-
-> **Note**: Core features (registration, backup, etc.) function perfectly even without an AI server.
+> **Note**: Core features (registration, backup, label printing) work perfectly even without an AI server.
 
 ---
 
