@@ -135,19 +135,39 @@ function decodeMatterPayload(payload) {
     try {
         const base38Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-.";
         const base38Data = payload.substring(3);
-        let bigIntValue = BigInt(0);
-        for (let i = base38Data.length - 1; i >= 0; i--) {
-            const charCode = base38Alphabet.indexOf(base38Data[i]);
-            if (charCode === -1) return null;
-            bigIntValue = bigIntValue * BigInt(38) + BigInt(charCode);
+        
+        // 1. Matter 표준 Base38 블록 디코딩 (5 chars -> 3 bytes)
+        let bytes = [];
+        let offset = 0;
+        while (offset < base38Data.length) {
+            let len = Math.min(5, base38Data.length - offset);
+            let chars = base38Data.substring(offset, offset + len);
+            let val = 0;
+            let multiplier = 1;
+            for (let i = 0; i < len; i++) {
+                const charIndex = base38Alphabet.indexOf(chars[i]);
+                if (charIndex === -1) return null;
+                val += charIndex * multiplier;
+                multiplier *= 38;
+            }
+            if (len >= 2) bytes.push(val & 0xFF);
+            if (len >= 4) bytes.push((val >> 8) & 0xFF);
+            if (len === 5) bytes.push((val >> 16) & 0xFF);
+            offset += len;
         }
 
-        // 비트 추출
+        // 2. 바이트 배열을 하나의 리틀엔디안 BigInt로 결합
+        let bigIntValue = BigInt(0);
+        for (let i = 0; i < bytes.length; i++) {
+            bigIntValue |= BigInt(bytes[i]) << BigInt(i * 8);
+        }
+
+        // 3. 비트 추출 (Matter Payload 구조)
         const vid = Number((bigIntValue >> BigInt(3)) & BigInt(0xFFFF));
         const discriminator = Number((bigIntValue >> BigInt(45)) & BigInt(0xFFF));
         const setupPin = Number((bigIntValue >> BigInt(57)) & BigInt(0x7FFFFFF));
 
-        // 11자리 수동 코드 연산 (Matter Spec 5.1.4.1 완벽 준수 - 마스터 픽스)
+        // 4. 11자리 수동 코드 연산 (Matter Spec 5.1.4.1)
         const shortDiscriminator = discriminator >> 8;
         const digit1 = (shortDiscriminator >> 2) & 0x3;
         const digit2To6 = ((shortDiscriminator & 0x3) << 14) | (setupPin & 0x3FFF);
@@ -155,7 +175,7 @@ function decodeMatterPayload(payload) {
 
         const manualCodeStr = `${digit1}${String(digit2To6).padStart(5, '0')}${String(digit7To10).padStart(4, '0')}`;
 
-        // Verhoeff Checksum (Check Digit 생성)
+        // 5. Verhoeff Checksum (Check Digit 생성)
         const d = [
             [0,1,2,3,4,5,6,7,8,9], [1,2,3,4,0,6,7,8,9,5], [2,3,4,0,1,7,8,9,5,6],
             [3,4,0,1,2,8,9,5,6,7], [4,0,1,2,3,9,5,6,7,8], [5,9,8,7,6,0,4,3,2,1],

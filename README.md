@@ -1,6 +1,6 @@
-# Matter Code Vault HA (v4.0.2)
+# Matter Code Vault HA (v4.0.3)
 
-> Matter Device Management & QR Code Backup/Restore Tool (v4.0.2)
+> Matter Device Management & QR Code Backup/Restore Tool (v4.0.3)
 
 Matter Code Vault is a powerful Home Assistant add-on designed for seamless Matter device management. Securely back up complex pairing codes and QR codes, and manage them intelligently using AI-driven features.
 
@@ -21,20 +21,20 @@ https://github.com/dicapriokim/Matter-Code-Vault-Pcroom.git
 
 ---
 
-## ✨ Master Slicing Fix (v4.0.2)
+## ✨ Core Engine Upgrade (v4.0.3)
 
 - **Backend AI Proxy**: Integrated backend proxy to resolve Mixed Content (HTTPS -> HTTP) and CORS issues, ensuring stable AI communication in Home Assistant environments.
 - **Dynamic Loading UI**: Soft pulsing "Analyzing..." indicators for AI and standard OCR/QR scans to provide clear visual feedback during processing.
 - **Local AI Engine (Ollama)**: Advanced reasoning using `antigravity-model:3b` for intelligent device naming and OCR error correction.
 - **Modular Architecture**: Optimized modular structure (`state.js`, `ui.js`, `ai.js`, `scanner.js`) for high performance and maintainability.
 - **Dual Storage Vault**: Redundant saving system via HA Backend API and Browser `localStorage`.
-- **Master Slicing Fix (v4.0.2)**: Resolved bit-masking overflows in digit calculation for 100% accurate manual code generation.
-- **Spec 5.1.4.1 Compliance**: Perfect bit-level implementation of Matter Setup Code standards.
+- **Block-by-block Base38 Engine (v4.0.3)**: Full compliance with Matter Spec 5.1.3 for 100% accurate payload decoding.
+- **Master Slicing Fix**: Corrected bitwise operations for perfect manual code generation.
 - **Label Ready**: High-quality QR generation optimized for thermal label printers.
 
 ---
 
-## 📖 Quick Start Guide (v4.0.2)
+## 📖 Quick Start Guide (v4.0.3)
 
 ### 1. Initial Setup
 Before adding devices, configure your ecosystem in the **[Settings ⚙️]** menu to ensure data consistency:

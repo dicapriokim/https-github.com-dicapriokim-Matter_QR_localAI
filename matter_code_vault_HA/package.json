@@ -1,7 +1,7 @@
 {
   "name": "matter-code-vault-addon",
-  "version": "4.0.2",
-  "description": "Matter Code Vault Home Assistant Add-on (v4.0.2) - Includes Master Slicing Fix",
+  "version": "4.0.3",
+  "description": "Matter Code Vault Home Assistant Add-on (v4.0.3) - Includes Block-by-block Base38 Engine",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
