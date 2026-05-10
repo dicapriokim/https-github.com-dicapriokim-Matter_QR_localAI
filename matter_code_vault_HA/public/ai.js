@@ -64,13 +64,17 @@ async function suggestDeviceName() {
     const type = document.getElementById('devType').value;
     const location = document.getElementById('devLoc').value;
     const nameInput = document.getElementById('devName');
+    const statusEl = document.getElementById('aiNameStatus');
 
     if (!manufacturer || !type) { showToast("제조사와 기기 종류를 먼저 선택해주세요."); return; }
 
+    if(statusEl) statusEl.classList.remove('hidden');
     nameInput.placeholder = "AI가 생각 중...";
     const prompt = `Matter 기기 이름을 한국어로 간결하게 추천해줘. 제조사: ${manufacturer}, 기기 종류: ${type}, 설치 장소: ${location}. 결과만 텍스트로 출력.`;
 
     const suggestion = await askOllama(prompt, REASONING_MODEL, false);
+    
+    if(statusEl) statusEl.classList.add('hidden');
     if (suggestion) { nameInput.value = suggestion.trim(); showToast("이름이 추천되었습니다!"); }
     else nameInput.placeholder = "예: 거실 천장 조명";
 }

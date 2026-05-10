@@ -177,6 +177,15 @@
             }
         }
 
+        .soft-pulse {
+            animation: soft-pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes soft-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
         #cameraLoading {
             position: absolute;
             inset: 0;
@@ -931,6 +940,7 @@
                         <div class="relative flex gap-2">
                             <input type="text" id="devName" placeholder="예: 거실 천장 조명"
                                 class="input-field input-focus-scroll">
+                            <div id="aiNameStatus" class="hidden text-[10px] text-purple-500 font-bold soft-pulse mt-1 ml-1 absolute -bottom-5 left-0">🤖 AI 분석 중...</div>
                             <button onclick="suggestDeviceName()"
                                 class="bg-purple-50 text-purple-600 p-3 rounded-2xl border border-purple-100 shadow-sm active:scale-95 transition-all flex-shrink-0"
                                 title="AI 이름 추천">

@@ -166,7 +166,16 @@ function resizeImage(file, maxDimension) {
 
 async function executeAiAnalysis(base64Data) {
     const modalContent = document.getElementById('modalContent');
-    if (modalContent) modalContent.classList.add('ai-border'); 
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.id = "aiLoadingOverlay";
+    loadingOverlay.className = "absolute inset-0 bg-white/60 backdrop-blur-[2px] z-50 flex items-center justify-center rounded-2xl soft-pulse";
+    loadingOverlay.innerHTML = '<span class="text-orange-600 font-bold text-sm">🤖 AI 정밀 분석 중...</span>';
+
+    if (modalContent) {
+        modalContent.classList.add('ai-border');
+        modalContent.appendChild(loadingOverlay);
+    }
+    
     showToast("AI 정밀 판독 (Dual Model)...");
     
     try {
@@ -214,6 +223,8 @@ async function executeAiAnalysis(base64Data) {
         showToast("AI 분석 실패");
     } finally {
         if (modalContent) modalContent.classList.remove('ai-border');
+        const overlay = document.getElementById('aiLoadingOverlay');
+        if (overlay) overlay.remove();
     }
 }
 
