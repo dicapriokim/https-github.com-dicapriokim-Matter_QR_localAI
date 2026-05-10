@@ -11,7 +11,7 @@ Matter Code Vault is a powerful Home Assistant add-on designed for seamless Matt
 To install this add-on, add the following URL to your Home Assistant **Add-on Store** > **Repositories**:
 
 ```text
-https://github.com/dicapriokim/Matter-Code-Vault-Pcroom.git
+https://github.com/dicapriokim/Matter-Code-Vault-v5.git
 ```
 
 1. Navigate to **Settings** > **Add-ons** > **Add-on Store** in Home Assistant.
