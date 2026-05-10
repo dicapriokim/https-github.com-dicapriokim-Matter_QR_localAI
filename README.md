@@ -1,6 +1,6 @@
-# Matter Code Vault HA (v3.2.1)
+# Matter Code Vault HA (v3.2.5)
 
-> Matter Device Management & QR Code Backup/Restore Tool (v3.2.1)
+> Matter Device Management & QR Code Backup/Restore Tool (v3.2.5)
 
 Matter Code Vault is a powerful Home Assistant add-on designed for seamless Matter device management. Securely back up complex pairing codes and QR codes, and manage them intelligently using AI-driven features.
 
@@ -21,16 +21,15 @@ https://github.com/dicapriokim/Matter-Code-Vault-Pcroom.git
 
 ---
 
-## ✨ Key Features (v3.0.5 Update)
+## ✨ Key Features (v3.2.5 Update)
 
-- **Local AI Engine (Ollama)**: Transitioned from Google Gemini to local LLM integration for enhanced privacy and offline support.
-- **Intelligent Data Cleaning**: Automatically corrects OCR typos (e.g., 0 to 8) and infers device brands using the `antigravity-model`.
-- **Modular Architecture**: Re-engineered core logic into a modular structure (`state.js`, `ui.js`, `ai.js`, `scanner.js`) for better maintainability.
-- **Dual Storage Vault**: Implemented a redundant saving system using both HA Backend API (SSOT) and Browser `localStorage` (Cache).
-- **Smart Registration**: Scan via webcam, upload photos, or use manual input with AI-powered name recommendations.
-- **Dynamic UI**: Automatically hides empty locations and supports drag-and-drop sorting.
-- **Creator Mode (🛡️)**: Precisely masks sensitive QR/pairing codes for safe screen sharing.
-- **Label Ready**: Generate and download high-quality QR images optimized for label printers.
+- **Backend AI Proxy**: Integrated backend proxy to resolve Mixed Content (HTTPS -> HTTP) and CORS issues, ensuring stable AI communication in Home Assistant environments.
+- **Dynamic Loading UI**: Soft pulsing "Analyzing..." indicators for AI and standard OCR/QR scans to provide clear visual feedback during processing.
+- **Local AI Engine (Ollama)**: Advanced reasoning using `antigravity-model:3b` for intelligent device naming and OCR error correction.
+- **Modular Architecture**: Optimized modular structure (`state.js`, `ui.js`, `ai.js`, `scanner.js`) for high performance and maintainability.
+- **Dual Storage Vault**: Redundant saving system via HA Backend API and Browser `localStorage`.
+- **Creator Mode (🛡️)**: Privacy-focused masking for sensitive QR/pairing codes during screen sharing.
+- **Label Ready**: High-quality QR generation optimized for thermal label printers.
 
 ---
 
