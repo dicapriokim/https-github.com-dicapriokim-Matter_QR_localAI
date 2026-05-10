@@ -141,7 +141,11 @@ async function processOcrImage(event) {
             document.getElementById('displayMtPayload').value = qrCode;
             document.getElementById('qrStatusIcon').classList.remove('hidden');
             applyDecodedInfo(decodeMatterPayload(qrCode));
-        } else if (ocrCode) {
+        }
+
+        // Fallback: If QR didn't fill the 11-digit pairing code, try OCR
+        const devPayload = document.getElementById('devPayload');
+        if ((!devPayload || !devPayload.value) && ocrCode) {
             handleInput(ocrCode);
         }
         if (ocrCode || qrCode) showToast("분석 성공!"); else showToast("인식 정보 없음");
@@ -216,7 +220,7 @@ async function executeAiAnalysis(base64Data) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: REASONING_MODEL,
-                prompt: `Rule: Be highly aware of common OCR errors where a slashed '0' is misread as an '8' in the pairing code. Based on this description, extract the Matter QR (MT:...) and the 11-digit pairing code as JSON { "mt": "MT:...", "code": "xxxx-xxx-xxxx" }. Description: ${visionText}`,
+                prompt: `Based on the description, extract the Matter QR and the 11-digit code as strict JSON { "mt": "MT:...", "code": "xxxx-xxx-xxxx" }. Rule: Slashed zeros MUST be transcribed as the digit '0'. Output EXACTLY 11 digits for the code. Do NOT add any notes, explanations, or extra text. Description: ${visionText}`,
                 stream: false,
                 format: "json",
                 options: { temperature: 0.1, keep_alive: "5m" }
