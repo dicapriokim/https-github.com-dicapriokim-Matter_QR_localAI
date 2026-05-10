@@ -182,8 +182,6 @@ function resizeImage(file, maxDimension) {
         };
         img.onerror = reject; img.src = URL.createObjectURL(file);
     });
-}
-
 async function executeAiAnalysis(base64Data) {
     const modalContent = document.getElementById('modalContent');
     const loadingOverlay = document.createElement('div');
@@ -227,33 +225,30 @@ async function executeAiAnalysis(base64Data) {
             })
         });
         const reasoningData = await reasoningRes.json();
-        let info = JSON.parse(reasoningData.response);
+        const info = JSON.parse(reasoningData.response);
 
-        // --- Pass 2: Rapid Zoom Check for Slashed Zeros ---
-        const hasPotentialZero = info.code && (info.code.includes('8') || info.code.includes('0'));
-        if (hasPotentialZero) {
-            const overlay = document.getElementById('aiLoadingOverlay');
-            if (overlay) overlay.innerHTML = '<span class="text-orange-600 font-bold text-sm">🤖 정밀 확대 판독 중...</span>';
-            
-            const zoomRes = await fetch(OLLAMA_PROXY_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: VISION_MODEL,
-                    prompt: `In the pairing code "${info.code}", are any '8's actually '0's with a diagonal slash? Answer with the corrected 11-digit code only.`,
-                    images: [base64Data],
-                    stream: false,
-                    options: { num_predict: 20, keep_alive: "5m" }
-                })
-            });
-            
-            if (zoomRes.ok) {
-                const zoomData = await zoomRes.json();
-                const matched = zoomData.response.match(/\d{4}-\d{3}-\d{4}/) || zoomData.response.match(/\d{11}/);
-                if (matched) {
-                    console.log("[AI Zoom] Corrected:", matched[0]);
-                    info.code = matched[0];
+        // --- Algorithmic Voting: Cross-Validation for Slashed Zeros ---
+        const existingInput = document.getElementById('devPayload');
+        if (info.code && existingInput && existingInput.value) {
+            const existingCode = existingInput.value.replace(/-/g, '');
+            let aiCodeRaw = info.code.replace(/-/g, '');
+
+            // 두 코드 모두 11자리일 때만 1:1 문자 대조 실행
+            if (existingCode.length === 11 && aiCodeRaw.length === 11) {
+                let mergedCode = "";
+                for (let i = 0; i < 11; i++) {
+                    // 한쪽이라도 0이고 다른 한쪽이 8이면, Slashed Zero 오인식으로 간주하고 '0' 채택
+                    if ((existingCode[i] === '0' && aiCodeRaw[i] === '8') || 
+                        (existingCode[i] === '8' && aiCodeRaw[i] === '0')) {
+                        mergedCode += '0';
+                    } else {
+                        // 그 외의 경우는 정밀도가 높은 AI(aiCodeRaw)의 결과를 우선 신뢰
+                        mergedCode += aiCodeRaw[i];
+                    }
                 }
+                // 병합된 코드를 다시 포맷팅 (xxxx-xxx-xxxx)
+                info.code = mergedCode.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3');
+                console.log("[Cross-Validation] Merged Code applied:", info.code);
             }
         }
 
