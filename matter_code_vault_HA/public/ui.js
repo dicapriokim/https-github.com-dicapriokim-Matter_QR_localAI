@@ -493,6 +493,36 @@ async function saveDevice() {
     if (!name) { showToast("기기 이름을 입력하세요."); return; }
     if (!payload) { showToast("Pairing Code (11자리 숫자)는 필수입니다."); return; }
 
+    // 중복 기기 등록 방지 검증 (Duplicate Prevention Validation)
+    const otherDevices = id ? devices.filter(d => String(d.id) !== String(id)) : devices;
+    const cleanPayload = payload.replace(/-/g, '');
+    const cleanMt = mtPayload ? mtPayload.trim() : '';
+
+    let qrDuplicate = false;
+    let codeDuplicate = false;
+
+    for (const d of otherDevices) {
+        const dCleanPayload = d.payload ? d.payload.replace(/-/g, '') : '';
+        const dCleanMt = d.mtPayload ? d.mtPayload.trim() : '';
+
+        const matchesQr = !!(cleanMt && dCleanMt && cleanMt === dCleanMt);
+        const matchesCode = !!(cleanPayload && dCleanPayload && cleanPayload === dCleanPayload);
+
+        if (matchesQr) qrDuplicate = true;
+        if (matchesCode) codeDuplicate = true;
+    }
+
+    if (qrDuplicate && !codeDuplicate) {
+        alert("QR코드가 같은 기기가 등록되어 있습니다. 확인요망.");
+        return;
+    } else if (!qrDuplicate && codeDuplicate) {
+        alert("11자리 숫자 같은 기기가 등록되어 있습니다. 확인요망.");
+        return;
+    } else if (qrDuplicate && codeDuplicate) {
+        alert("이미 등록 된 기기 입니다.");
+        return;
+    }
+
     // 2. Confirmation (v2.17.6 Logic)
     if (!confirm("QR(바코드)로 페어링 정상 여부를 확인하세요. 저장하시겠습니까?")) return;
 
