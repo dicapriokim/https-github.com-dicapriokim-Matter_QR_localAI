@@ -254,7 +254,15 @@ function handleDrop(e, targetLoc) {
 }
 
 
-function setCategory(category) { window.activeCategory = category; renderCategoryFilters(); renderDevices(); }
+function setCategory(category) {
+    window.activeCategory = category;
+    if (category === 'All') {
+        window.activeLocation = 'All';
+        renderLocationReorderBar();
+    }
+    renderCategoryFilters();
+    renderDevices();
+}
 
 function getIconForType(type) {
     if (type.includes('조명') || type.includes('Light')) return 'lightbulb';
