@@ -16,7 +16,7 @@ async function askLocalAI(prompt, model, isJson = false) {
         
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
-            const errMsg = errData.error || `HTTP ${res.status}`;
+            const errMsg = errData.message || errData.error || `HTTP ${res.status}`;
             console.error("AI Proxy Error:", res.status, errData);
             showToast(`AI 오류: ${errMsg}`);
             return null;
