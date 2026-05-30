@@ -127,23 +127,23 @@ app.post('/api/data', (req, res) => {
     }
 });
 
-// API: AI Proxy (Forward requests to local Ollama)
+// API: AI Proxy (Forward requests to LocalAI)
 app.post('/api/ai', async (req, res) => {
-    // 1. Resolve OLLAMA IP (Priority: HA Options > .env > Default)
-    let ollamaIp = process.env.OLLAMA_IP || "127.0.0.1";
+    // 1. Resolve LocalAI IP (Priority: HA Options > .env > Default)
+    let localAiIp = process.env.LOCAL_AI_IP || "127.0.0.1";
     
     if (fs.existsSync(configPath)) {
         try {
             const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-            if (config.ollama_ip && config.ollama_ip.trim() !== "") {
-                ollamaIp = config.ollama_ip;
+            if (config.local_ai_ip && config.local_ai_ip.trim() !== "") {
+                localAiIp = config.local_ai_ip;
             }
         } catch (e) {
-            console.warn("[AI Proxy] Failed to read ollama_ip from config.");
+            console.warn("[AI Proxy] Failed to read local_ai_ip from config.");
         }
     }
 
-    const LOCALAI_SERVER_URL = `http://${ollamaIp}:8080/v1/chat/completions`;
+    const LOCALAI_SERVER_URL = `http://${localAiIp}:8080/v1/chat/completions`;
     console.log(`[AI Proxy] Request received. Model: ${req.body.model}`);
     
     try {

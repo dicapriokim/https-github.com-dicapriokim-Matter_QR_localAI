@@ -15,9 +15,9 @@ map:
   - config:rw
   - share:rw
 options:
-  ollama_ip: "127.0.0.1"
+  local_ai_ip: "127.0.0.1"
 schema:
-  ollama_ip: str
+  local_ai_ip: str
 # image: "matter-code-vault-{arch}"
 ingress: true
 ingress_port: 8099

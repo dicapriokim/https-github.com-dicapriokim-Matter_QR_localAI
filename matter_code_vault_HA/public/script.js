@@ -2,7 +2,7 @@ window.APP_VERSION = "5.1.15";
 window.CURRENT_AI_MODEL = "qwen-1.5b";
 window.VISION_MODEL = "moondream";
 window.REASONING_MODEL = "qwen-1.5b";
-window.OLLAMA_PROXY_URL = "api/ai";
+window.AI_PROXY_URL = "api/ai";
 
 import './utils.js';
 import './ui.js';

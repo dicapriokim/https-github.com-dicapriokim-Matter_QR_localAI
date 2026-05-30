@@ -244,7 +244,7 @@ async function executeAiAnalysis(base64Data) {
     
     try {
         // Step 1: Vision Pass (Moondream)
-        const visionRes = await fetch(OLLAMA_PROXY_URL, {
+        const visionRes = await fetch(AI_PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -265,7 +265,7 @@ async function executeAiAnalysis(base64Data) {
         const visionText = visionData.choices?.[0]?.message?.content || "";
 
         // Step 2: Reasoning Pass (Qwen2.5)
-        const reasoningRes = await fetch(OLLAMA_PROXY_URL, {
+        const reasoningRes = await fetch(AI_PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

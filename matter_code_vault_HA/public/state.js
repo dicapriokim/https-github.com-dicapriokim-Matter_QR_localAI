@@ -4,8 +4,8 @@
 
 // APP_VERSION is now managed centrally via script.js and backend API
 
-// --- OLLAMA AI CONFIG ---
-export const OLLAMA_BASE_URL = "http://127.0.0.1:11434";
+// --- LOCAL AI CONFIG ---
+export const LOCAL_AI_BASE_URL = "http://127.0.0.1:8080";
 export const LOCAL_AI_CONFIG = {
     reasoning: { model: "antigravity-model", role: "뇌 (Brain) — 데이터 정제, 오타 교정, 지능형 작명" },
     keepAlive: "5m",
@@ -145,6 +145,6 @@ export async function saveData() {
 // Window Bindings for Compatibility
 if (typeof window !== 'undefined') {
     if(!window.app) window.app = {};
-    window.app.state = { appState, APP_VERSION, OLLAMA_BASE_URL, LOCAL_AI_CONFIG, initState, saveData, syncToLocalCache, ICONS };
+    window.app.state = { appState, APP_VERSION, LOCAL_AI_BASE_URL, LOCAL_AI_CONFIG, initState, saveData, syncToLocalCache, ICONS };
     window.appState = appState;
 }

@@ -1,8 +1,8 @@
 // Constants are now managed globally in script.js
 
-async function askOllama(prompt, model, isJson = false) {
+async function askLocalAI(prompt, model, isJson = false) {
     const targetModel = model || window.REASONING_MODEL || "qwen-1.5b";
-    const proxyUrl = window.OLLAMA_PROXY_URL || "api/ai";
+    const proxyUrl = window.AI_PROXY_URL || "api/ai";
     try {
         const res = await fetch(proxyUrl, {
             method: 'POST',
@@ -53,7 +53,7 @@ async function sendAiQuery() {
 
     const systemInstruction = "너는 스마트홈, IoT, Matter 표준 전문 AI 어시스턴트야. 별도의 언급이 없더라도 모든 답변은 스마트홈, 홈 자동화, IoT 기기 맥락에서 전문적으로 답변해줘. 브랜드명(예: 아카라, 필립스 휴 등)은 일반 명사가 아닌 IoT 제품 브랜드로 인식해야 해. ";
     const model = window.REASONING_MODEL || "antigravity-model:3b";
-    const response = await askOllama(systemInstruction + query, model, false);
+    const response = await askLocalAI(systemInstruction + query, model, false);
 
     const loadingEl = document.getElementById(loadingId);
     if (loadingEl) loadingEl.remove();
@@ -89,7 +89,7 @@ async function suggestDeviceName() {
 
         console.log("[AI-Naming] Requesting suggestion for:", { manufacturer, type, location });
         const model = window.REASONING_MODEL || "antigravity-model:3b";
-        const suggestion = await askOllama(prompt, model, false);
+        const suggestion = await askLocalAI(prompt, model, false);
         
         if (suggestion && nameInput) { 
             console.log("[AI-Naming] Success:", suggestion);
@@ -102,7 +102,7 @@ async function suggestDeviceName() {
         }
     } catch (err) {
         console.error("[AI-Naming] Error:", err);
-        showToast("작명 실패! HA 설정의 Ollama IP를 확인해 주세요.");
+        showToast("작명 실패! HA 설정의 LocalAI IP를 확인해 주세요.");
     } finally {
         if(statusEl) statusEl.classList.add('hidden');
     }
@@ -112,8 +112,8 @@ async function suggestDeviceName() {
 
 // Window Bindings for HTML Inline Events & Scope Sharing
 if(typeof window !== 'undefined' && !window.app) window.app = {};
-window.askOllama = typeof askOllama !== 'undefined' ? askOllama : window.askOllama;
-if(typeof window.app !== 'undefined') window.app.askOllama = window.askOllama;
+window.askLocalAI = typeof askLocalAI !== 'undefined' ? askLocalAI : window.askLocalAI;
+if(typeof window.app !== 'undefined') window.app.askLocalAI = window.askLocalAI;
 window.getAIInsights = typeof getAIInsights !== 'undefined' ? getAIInsights : window.getAIInsights;
 if(typeof window.app !== 'undefined') window.app.getAIInsights = window.getAIInsights;
 window.closeAiQaModal = typeof closeAiQaModal !== 'undefined' ? closeAiQaModal : window.closeAiQaModal;
@@ -122,5 +122,5 @@ window.sendAiQuery = typeof sendAiQuery !== 'undefined' ? sendAiQuery : window.s
 if(typeof window.app !== 'undefined') window.app.sendAiQuery = window.sendAiQuery;
 window.suggestDeviceName = typeof suggestDeviceName !== 'undefined' ? suggestDeviceName : window.suggestDeviceName;
 if(typeof window.app !== 'undefined') window.app.suggestDeviceName = window.suggestDeviceName;
-window.OLLAMA_PROXY_URL = typeof OLLAMA_PROXY_URL !== 'undefined' ? OLLAMA_PROXY_URL : window.OLLAMA_PROXY_URL;
-if(typeof window.app !== 'undefined') window.app.OLLAMA_PROXY_URL = window.OLLAMA_PROXY_URL;
+window.AI_PROXY_URL = typeof AI_PROXY_URL !== 'undefined' ? AI_PROXY_URL : window.AI_PROXY_URL;
+if(typeof window.app !== 'undefined') window.app.AI_PROXY_URL = window.AI_PROXY_URL;
