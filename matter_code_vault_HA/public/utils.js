@@ -130,6 +130,33 @@ function removeVidMapping(vid) {
 
 
 // --- MATTER UTILS ---
+function validateVerhoeff(code) {
+    if (!code) return false;
+    const cleanCode = code.replace(/-/g, '');
+    if (cleanCode.length !== 11) return false;
+
+    const d = [
+        [0,1,2,3,4,5,6,7,8,9], [1,2,3,4,0,6,7,8,9,5], [2,3,4,0,1,7,8,9,5,6],
+        [3,4,0,1,2,8,9,5,6,7], [4,0,1,2,3,9,5,6,7,8], [5,9,8,7,6,0,4,3,2,1],
+        [6,5,9,8,7,1,0,4,3,2], [7,6,5,9,8,2,1,0,4,3], [8,7,6,5,9,3,2,1,0,4],
+        [9,8,7,6,5,4,3,2,1,0]
+    ];
+    const p = [
+        [0,1,2,3,4,5,6,7,8,9], [1,5,7,6,2,8,3,0,9,4], [5,8,0,3,7,9,6,1,4,2],
+        [8,9,1,6,0,4,3,5,2,7], [9,4,5,3,1,2,6,8,7,0], [4,2,8,6,5,7,3,9,0,1],
+        [2,7,9,3,8,0,6,4,1,5], [7,0,4,6,9,1,3,2,5,8]
+    ];
+
+    let c = 0;
+    let reversed = cleanCode.split('').reverse();
+    for (let i = 0; i < reversed.length; i++) {
+        const digit = parseInt(reversed[i], 10);
+        if (isNaN(digit)) return false;
+        c = d[c][p[i % 8][digit]];
+    }
+    return c === 0;
+}
+
 function decodeMatterPayload(payload) {
     if (!payload || !payload.startsWith("MT:") || payload.length < 10) return null;
     try {
@@ -245,3 +272,5 @@ window.applyDecodedInfo = typeof applyDecodedInfo !== 'undefined' ? applyDecoded
 if(typeof window.app !== 'undefined') window.app.applyDecodedInfo = window.applyDecodedInfo;
 window.ICONS = typeof ICONS !== 'undefined' ? ICONS : window.ICONS;
 if(typeof window.app !== 'undefined') window.app.ICONS = window.ICONS;
+window.validateVerhoeff = typeof validateVerhoeff !== 'undefined' ? validateVerhoeff : window.validateVerhoeff;
+if(typeof window.app !== 'undefined') window.app.validateVerhoeff = window.validateVerhoeff;

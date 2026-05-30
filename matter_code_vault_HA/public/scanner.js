@@ -93,9 +93,13 @@ async function checkTesseractAndFallback() {
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
     const ocrCode = await runTesseractVersion2(canvas);
     if (ocrCode) {
-        handleInput(ocrCode);
-        if (currentVerifiedMt) { showToast("인식 완료!"); stopCamera(); }
-        else showToast("숫자 인식됨! QR을 찾는 중...");
+        if (validateVerhoeff(ocrCode)) {
+            handleInput(ocrCode);
+            if (currentVerifiedMt) { showToast("인식 완료!"); stopCamera(); }
+            else showToast("숫자 인식됨! QR을 찾는 중...");
+        } else {
+            console.log("[Live OCR Checksum Failure] 실시간 OCR 인식 코드의 체크섬이 유효하지 않아 스킵합니다:", ocrCode);
+        }
     }
 }
 
@@ -162,9 +166,13 @@ async function processOcrImage(event) {
 
         // 1순위: 로컬 OCR 백업
         if (ocrCode) {
-            handleInput(ocrCode);
-            showToast("로컬 OCR 분석 완료!");
-            return; // Early Return: AI 호출 차단
+            if (validateVerhoeff(ocrCode)) {
+                handleInput(ocrCode);
+                showToast("로컬 OCR 분석 완료!");
+                return; // Early Return: AI 호출 차단 (체크섬 검증 성공)
+            } else {
+                console.log("[OCR Checksum Failure] 로컬 OCR 인식 코드의 체크섬이 유효하지 않아 AI 정밀 분석을 호출합니다:", ocrCode);
+            }
         }
 
         // 2순위: 지능형 분석 (최후의 Fallback)
@@ -263,32 +271,30 @@ async function executeAiAnalysis(base64Data) {
         const reasoningData = await reasoningRes.json();
         const info = JSON.parse(reasoningData.choices?.[0]?.message?.content || "{}");
 
-        // --- Algorithmic Voting: Cross-Validation for Slashed Zeros (v3.3.2) ---
-        const existingInput = document.getElementById('devPayload');
-        if (info.code && existingInput && existingInput.value) {
-            const existingCode = existingInput.value.replace(/-/g, '');
-            let aiCodeRaw = info.code.replace(/-/g, '');
+        // --- Algorithmic Voting & Auto-Correction for Slashed Zeros & LCD Distortion (v5.1.2) ---
+        let finalCode = info.code ? info.code.replace(/-/g, '') : '';
 
-            // 두 코드 모두 11자리일 때만 1:1 문자 대조 실행
-            if (existingCode.length === 11 && aiCodeRaw.length === 11) {
+        const existingInput = document.getElementById('devPayload');
+        if (finalCode.length === 11 && existingInput && existingInput.value) {
+            const existingCode = existingInput.value.replace(/-/g, '');
+            if (existingCode.length === 11) {
                 let mergedCode = "";
                 for (let i = 0; i < 11; i++) {
                     // 한쪽이라도 0이고 다른 한쪽이 8이면, Slashed Zero 오인식으로 간주하고 '0' 채택
-                    if ((existingCode[i] === '0' && aiCodeRaw[i] === '8') || 
-                        (existingCode[i] === '8' && aiCodeRaw[i] === '0')) {
+                    if ((existingCode[i] === '0' && finalCode[i] === '8') || 
+                        (existingCode[i] === '8' && finalCode[i] === '0')) {
                         mergedCode += '0';
                     } else {
-                        // 그 외의 경우는 정밀도가 높은 AI(aiCodeRaw)의 결과를 우선 신뢰
-                        mergedCode += aiCodeRaw[i];
+                        mergedCode += finalCode[i];
                     }
                 }
-                // 병합된 코드를 다시 포맷팅 (xxxx-xxx-xxxx)
-                info.code = mergedCode.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3');
-                console.log("[Cross-Validation] Merged Code applied:", info.code);
+                finalCode = mergedCode;
+                console.log("[Cross-Validation] Merged Code applied:", finalCode);
             }
         }
 
-        if (info.code) handleInput(info.code);
+        // QR 코드 디코딩 값을 최우선 신뢰하여 덮어쓰기
+        let decodedManualCode = null;
         if (info.mt) {
             currentVerifiedMt = info.mt;
             document.getElementById('devMtPayload').value = info.mt;
@@ -297,9 +303,55 @@ async function executeAiAnalysis(base64Data) {
             const decoded = decodeMatterPayload(info.mt);
             applyDecodedInfo(decoded);
             if (decoded && decoded.manualCode) {
-                console.log("[AI-QR] Digital Correction (v4.0.0):", decoded.manualCode);
-                info.code = decoded.manualCode;
+                decodedManualCode = decoded.manualCode.replace(/-/g, '');
+                console.log("[AI-QR] Digital Correction (v5.1.2):", decoded.manualCode);
+                finalCode = decodedManualCode;
             }
+        }
+
+        // QR 디코딩 값이 없고 최종 코드가 체크섬을 통과하지 못할 때 지능형 자동 복구 작동
+        if (finalCode.length === 11 && !validateVerhoeff(finalCode)) {
+            console.log("[Verhoeff Checksum Failed] Attempting Auto-Correction for LCD distortions...", finalCode);
+            const chars = finalCode.split('');
+            const targetIndices = [];
+            for (let i = 0; i < chars.length; i++) {
+                if (chars[i] === '6' || chars[i] === '8') {
+                    targetIndices.push(i);
+                }
+            }
+
+            // 6 또는 8을 0으로 변환 가능한 모든 조합 생성
+            if (targetIndices.length > 0 && targetIndices.length <= 4) {
+                const limit = 1 << targetIndices.length;
+                let foundCorrection = null;
+                for (let mask = 0; mask < limit; mask++) {
+                    const tempChars = [...chars];
+                    for (let j = 0; j < targetIndices.length; j++) {
+                        if ((mask & (1 << j)) !== 0) {
+                            tempChars[targetIndices[j]] = '0';
+                        }
+                    }
+                    const candidate = tempChars.join('');
+                    if (validateVerhoeff(candidate)) {
+                        foundCorrection = candidate;
+                        break; // 첫 번째로 체크섬을 만족하는 올바른 교정본을 채택
+                    }
+                }
+
+                if (foundCorrection) {
+                    finalCode = foundCorrection;
+                    console.log(`[Auto-Correction Success] Repaired code to: ${finalCode}`);
+                    showToast("오인식 기기 코드 자동 복구 완료!");
+                } else {
+                    console.warn(`[Auto-Correction Failed] No valid Verhoeff candidate found for ${finalCode}`);
+                }
+            }
+        }
+
+        // 최종 확정된 11자리 코드를 인풋 필드에 세팅
+        if (finalCode.length === 11) {
+            const formatted = finalCode.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3');
+            handleInput(formatted);
         }
         showToast("AI 분석 완료");
     } catch (e) {
@@ -349,3 +401,5 @@ window.executeAiAnalysis = typeof executeAiAnalysis !== 'undefined' ? executeAiA
 if(typeof window.app !== 'undefined') window.app.executeAiAnalysis = window.executeAiAnalysis;
 window.processAiImage = typeof processAiImage !== 'undefined' ? processAiImage : window.processAiImage;
 if(typeof window.app !== 'undefined') window.app.processAiImage = window.processAiImage;
+window.validateVerhoeff = typeof validateVerhoeff !== 'undefined' ? validateVerhoeff : window.validateVerhoeff;
+if(typeof window.app !== 'undefined') window.app.validateVerhoeff = window.validateVerhoeff;
