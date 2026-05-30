@@ -47,7 +47,7 @@ https://github.com/your-username/Matter-Code-Vault-AI.git
 ### 🧠 LocalAI 서버 구축 (AI 사전 작업)
 
 AI 기반의 OCR 오인식 교정 및 스마트 작명 추천 기능을 활용하려면, 애드온 사용 전에 로컬 AI 서버가 먼저 기동되어 있어야 합니다:
-* **LocalAI 서버 구축**: LocalAI는 외부 클라우드 통신 없이 로컬 환경에서 OpenAI API와 동일한 규격의 엔드포인트를 제공하는 경량 자율형 AI 서버 엔진입니다. 다음 단계로 넘어가기 전, **LocalAI-miniPC** 저장소의 안내에 따라 로컬 AI 서버를 먼저 구축해야 합니다.
+* **LocalAI 서버 구축**: LocalAI는 외부 클라우드 통신 없이 로컬 환경에서 OpenAI API와 동일한 규격의 엔드포인트를 제공하는 경량 자율형 AI 서버 엔진입니다. 다음 단계로 넘어가기 전, [**LocalAI-miniPC** 저장소](https://github.com/dicapriokim/LocalAI-miniPC)의 안내에 따라 로컬 AI 서버를 먼저 구축해야 합니다.
 * **필수 모델 로드**: 구축된 LocalAI 서버에 아래 두 가지 모델이 정상적으로 로드되어 작동하는지 확인하십시오:
   - **텍스트 모델**: `qwen-1.5b` (또는 추론 연산용 동급 초경량 LLM)
   - **비전 모델**: `moondream` (이미지/OCR 판독을 위한 멀티모달 비전 모델)
@@ -115,7 +115,7 @@ https://github.com/your-username/Matter-Code-Vault-AI.git
 ### 🧠 LocalAI Server Setup (AI Prerequisites)
 
 To utilize the AI-driven OCR correction and smart naming features, you must set up your local AI server beforehand:
-* **LocalAI Server Setup**: LocalAI is a lightweight, self-hosted AI server engine that provides OpenAI-compatible API endpoints locally, without communicating with external clouds. Before proceeding to the next step, ensure you have set up your local AI server as detailed in the **LocalAI-miniPC** repository.
+* **LocalAI Server Setup**: LocalAI is a lightweight, self-hosted AI server engine that provides OpenAI-compatible API endpoints locally, without communicating with external clouds. Before proceeding to the next step, ensure you have set up your local AI server as detailed in the [**LocalAI-miniPC** repository](https://github.com/dicapriokim/LocalAI-miniPC).
 * **Model Load**: Ensure you have successfully loaded the required models on your local AI server:
   - **Text Model**: `qwen-1.5b` (or equivalent lightweight text model)
   - **Vision Model**: `moondream` (for vision-pass OCR analysis)
