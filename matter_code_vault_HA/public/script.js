@@ -32,6 +32,7 @@ window.configs = {
 window.currentVerifiedMt = null;
 window.viewMode = 'grid';
 window.activeCategory = 'All';
+window.activeLocation = 'All';
 window.html5QrCode = null;
 window.isScanning = false;
 window.scanStartTime = 0;
@@ -221,6 +222,8 @@ window.viewMode = typeof viewMode !== 'undefined' ? viewMode : window.viewMode;
 if(typeof window.app !== 'undefined') window.app.window.viewMode = window.viewMode;
 window.activeCategory = typeof activeCategory !== 'undefined' ? activeCategory : window.activeCategory;
 if(typeof window.app !== 'undefined') window.app.window.activeCategory = window.activeCategory;
+window.activeLocation = typeof activeLocation !== 'undefined' ? activeLocation : window.activeLocation;
+if(typeof window.app !== 'undefined') window.app.window.activeLocation = window.activeLocation;
 window.html5QrCode = typeof html5QrCode !== 'undefined' ? html5QrCode : window.html5QrCode;
 if(typeof window.app !== 'undefined') window.app.window.html5QrCode = window.html5QrCode;
 window.isScanning = typeof isScanning !== 'undefined' ? isScanning : window.isScanning;

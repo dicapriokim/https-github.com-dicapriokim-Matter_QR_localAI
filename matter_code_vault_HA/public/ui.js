@@ -174,15 +174,33 @@ function renderLocationReorderBar() {
     // 4. 최종 필터링: (설정에 존재함) AND (등록된 기기가 있음)
     const finalOrder = order.filter(loc => validLocations.includes(loc) && activeLocations.includes(loc));
 
-    container.innerHTML = finalOrder.map(loc => `
-        <div class="bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-[11px] font-bold text-slate-600 flex items-center gap-2.5 cursor-grab active:cursor-grabbing shadow-sm whitespace-nowrap transition-all hover:border-orange-400 hover:shadow-md hover:scale-105 active:scale-95"
-             draggable="true" ondragstart="handleDragStart(event, '${loc}')" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${loc}')" onclick="scrollToLocation('${loc}')">
+    container.innerHTML = finalOrder.map(loc => {
+        const isActive = window.activeLocation === loc;
+        const activeClass = isActive
+            ? "border-orange-500 bg-orange-50 text-orange-700 ring-2 ring-orange-100"
+            : "bg-white border border-slate-200 text-slate-600 hover:border-orange-400 hover:shadow-md hover:scale-105";
+
+        return `
+        <div class="${activeClass} px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-2.5 cursor-grab active:cursor-grabbing shadow-sm whitespace-nowrap transition-all active:scale-95"
+             draggable="true" ondragstart="handleDragStart(event, '${loc}')" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${loc}')" onclick="toggleLocationFilter('${loc}')">
             <div class="flex flex-col items-center justify-center gap-0.5 text-orange-400 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 8 4 4-4 4M6 8l-4 4 4 4M2 12h20"/></svg>
             </div>
             ${loc}
-        </div>`).join('');
+        </div>`;
+    }).join('');
+}
+
+function toggleLocationFilter(loc) {
+    if (window.activeLocation === loc) {
+        window.activeLocation = 'All';
+    } else {
+        window.activeLocation = loc;
+        scrollToLocation(loc);
+    }
+    renderLocationReorderBar();
+    renderDevices();
 }
 
 function scrollToLocation(loc) {
@@ -250,6 +268,16 @@ function getIconForType(type) {
     return 'box';
 }
 
+function getJosa(word) {
+    if (!word) return '이';
+    const lastChar = word.charCodeAt(word.length - 1);
+    if (lastChar >= 0xAC00 && lastChar <= 0xD7A3) {
+        const hasBatchim = (lastChar - 0xAC00) % 28 !== 0;
+        return hasBatchim ? '이' : '가';
+    }
+    return '이';
+}
+
 function renderDevices() {
     const list = document.getElementById('deviceList');
     const totalStat = document.getElementById('stat-total-devices');
@@ -277,12 +305,30 @@ function renderDevices() {
             (d.manufacturer && d.manufacturer.toLowerCase().includes(query)) ||
             (d.platform && d.platform.toLowerCase().includes(query)) || (d.type && d.type.toLowerCase().includes(query));
         const matchesCategory = window.activeCategory === 'All' || d.type === activeCategory;
-        return matchesSearch && matchesCategory;
+        const matchesLocation = window.activeLocation === 'All' || d.location === window.activeLocation;
+        return matchesSearch && matchesCategory && matchesLocation;
     });
 
     if (devicesToRender.length === 0) {
         list.className = 'space-y-4'; // Reset grid/list class
         list.innerHTML = '';
+        
+        // 동적 안내 문구 설정
+        const emptyStateText = document.getElementById('emptyStateText');
+        if (emptyStateText) {
+            if (window.activeLocation !== 'All' && window.activeCategory !== 'All') {
+                const josa = getJosa(window.activeCategory);
+                emptyStateText.innerText = `${window.activeLocation}에는 ${window.activeCategory}${josa} 없습니다.`;
+            } else if (window.activeLocation !== 'All' && window.activeCategory === 'All') {
+                emptyStateText.innerText = `${window.activeLocation}에는 등록된 기기가 없습니다.`;
+            } else if (window.activeLocation === 'All' && window.activeCategory !== 'All') {
+                const josa = getJosa(window.activeCategory);
+                emptyStateText.innerText = `등록된 ${window.activeCategory}${josa} 없습니다.`;
+            } else {
+                emptyStateText.innerText = `검색 결과에 부합하는 기기가 없습니다.`;
+            }
+        }
+        
         document.getElementById('emptyState').classList.remove('hidden');
         return;
     }
@@ -737,3 +783,7 @@ window.scrollToTop = typeof scrollToTop !== 'undefined' ? scrollToTop : window.s
 if(typeof window.app !== 'undefined') window.app.scrollToTop = window.scrollToTop;
 window.draggedLocation = typeof draggedLocation !== 'undefined' ? draggedLocation : window.draggedLocation;
 if(typeof window.app !== 'undefined') window.app.draggedLocation = window.draggedLocation;
+window.toggleLocationFilter = typeof toggleLocationFilter !== 'undefined' ? toggleLocationFilter : window.toggleLocationFilter;
+if(typeof window.app !== 'undefined') window.app.toggleLocationFilter = window.toggleLocationFilter;
+window.getJosa = typeof getJosa !== 'undefined' ? getJosa : window.getJosa;
+if(typeof window.app !== 'undefined') window.app.getJosa = window.getJosa;
