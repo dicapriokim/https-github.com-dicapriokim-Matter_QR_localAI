@@ -4,7 +4,7 @@
 * **이전 세션 대화 ID:** `fbc3ac48-6cdb-4b36-be70-ffef57f8a1d5`
 * **현재 세션 대화 ID:** `fffcaf84-f7a9-4934-81d4-5a8bef3fc61d`
 * **마이그레이션 목표:** Ollama ➡️ LocalAI (OpenAI 호환 API 규격 / `qwen-1.5b` & `moondream` 모델)
-* **2단계 완료 상태:** **Matter QR AI (`Matter-Code-Vault-v5-master`) 마이그레이션 코드 시공, 로컬 연동 검증, 명칭 변경(Matter Code Vault AI) 및 신규 깃허브 배포(v5.1.10) 완료. 추가적으로 장소-카테고리 필터 교집합 연동 및 동적 한글 조사 매칭 빈 화면 안내 메시지 기능(emptyStateText), 그리고 자동 버전업(0.0.1 패치 증가) 및 일괄 동기화(sync-version.js) 고도화 탑재 완료. 최종적으로 Verhoeff 체크섬 기반의 지능형 오인식 자동 복구 필터 및 3단계 AI 강제 진입 완전 자동화 스캔 파이프라인 시공 및 카메라 스캔 안정화 지연 기능, 신규 깃 리모트 저장소 연동, 검색 필터 내 QR/페어링 코드 조건 추가, 검색창 안내 메시지 수정 및 중복 기기 등록 방지 검증 로직 탑재 완료. 백업 JSON 복원 시 중복 무시 스킵 로직 적용 완료. 기기 삭제 시 화면 정중앙에 기기명을 표시하여 경고하는 커스텀 삭제 확인 모달 도입 및 검색 필드 우측에 마우스 클릭 한 번으로 검색어를 지울 수 있는 원클릭 X(지우기) 단추 탑재 완료. 또한 카테고리 필터 첫 줄의 'All' 클릭 시, 활성화되어 있던 장소 필터들도 동시에 완전히 해제('All' 상태)되어 즉각 전체 기기가 조회되도록 연동 개선 완료.**
+* **2단계 완료 상태:** **Matter QR AI (`Matter-Code-Vault-v5-master`) 마이그레이션 코드 시공, 로컬 연동 검증, 명칭 변경(Matter Code Vault AI) 및 신규 깃허브 배포(v5.1.14) 완료. 추가적으로 장소-카테고리 필터 교집합 연동 및 동적 한글 조사 매칭 빈 화면 안내 메시지 기능(emptyStateText), 그리고 자동 버전업(0.0.1 패치 증가) 및 일괄 동기화(sync-version.js) 고도화 탑재 완료. 최종적으로 Verhoeff 체크섬 기반의 지능형 오인식 자동 복구 필터 및 3단계 AI 강제 진입 완전 자동화 스캔 파이프라인 시공 및 카메라 스캔 안정화 지연 기능, 신규 깃 리모트 저장소 연동, 검색 필터 내 QR/페어링 코드 조건 추가, 검색창 안내 메시지 수정 및 중복 기기 등록 방지 검증 로직 탑재 완료. 백업 JSON 복원 시 중복 무시 스킵 로직 적용 완료. 기기 삭제 시 화면 정중앙에 기기명을 표시하여 경고하는 커스텀 삭제 확인 모달 도입 및 검색 필드 우측에 마우스 클릭 한 번으로 검색어를 지울 수 있는 원클릭 X(지우기) 단추 탑재 완료. 또한 카테고리 필터 첫 줄의 'All' 클릭 시, 활성화되어 있던 장소 필터들도 동시에 완전히 해제('All' 상태)되어 즉각 전체 기기가 조회되도록 연동 개선 완료. 추가로, 프로젝트 README.md 파일을 최신 깃 저장소 경로 및 LocalAI 연동 사양, 신규 UX 기능 목록에 맞추어 전면 리라이팅하였고 AI 스캔/작명 기능 활용을 위한 사전 필수 작업(LocalAI 서버 엔진 구축 및 qwen-1.5b, moondream 모델 사전 로드 가이드)을 명시했으며, 한/영 대조 정합성을 대조한 후 한글 최우선 노출 및 최상단 영문 가이드 스크롤 안내 배너 라벨을 추가 시공하여 일괄 버전 동기화 완료.**
 
 ---
 
@@ -12,7 +12,7 @@
 
 ### 1. 성공한 단계
 * **LocalAI 서버 실시간 IP 발견 및 연결 성공:**
-  - 기존 IP인 `192.168.0.32`에 대한 핑이 불가능하여 네트워크를 스캔한 결과, 새로운 IP `192.168.0.33`에서 `8080` 포트로 LocalAI가 기동 중임을 발견함.
+  - 기존 AI IP인 `192.168.x.x`에 대한 핑이 불가능하여 네트워크를 스캔한 결과, 새로운 IP `192.168.y.y`에서 `8080` 포트로 LocalAI가 기동 중임을 발견함.
 * **Mail-Automator 마이그레이션 완료:**
   - `summarize.js`에서 기존 Ollama 전용 페이로드 형식을 OpenAI 호환 Chat Completions 규격으로 개편 및 파라미터 최적화 완료.
 * **LocalAI-Server 리포지토리 교정:**
@@ -23,9 +23,9 @@
   - [server.js](file:///d:/Antigravity/QR%20manager/Matter-Code-Vault-v5-master/matter_code_vault_HA/server.js)의 프록시 라우터를 LocalAI OpenAI 규격(`/v1/chat/completions`)으로 포워딩하도록 전면 수정.
   - [scanner.js](file:///d:/Antigravity/QR%20manager/Matter-Code-Vault-v5-master/matter_code_vault_HA/public/scanner.js)의 `executeAiAnalysis` 함수 내의 Vision Pass 및 Reasoning Pass 페이로드 전송/응답 파싱 로직을 OpenAI Multimodal 규격으로 전면 개편 완료 (Slashed Zero 수학적 보정 알고리즘 원형 유지).
   - [script.js](file:///d:/Antigravity/QR%20manager/Matter-Code-Vault-v5-master/matter_code_vault_HA/public/script.js)와 [ai.js](file:///d:/Antigravity/QR%20manager/Matter-Code-Vault-v5-master/matter_code_vault_HA/public/ai.js)의 기본 연동 상수를 `qwen-1.5b`로 교체 완료.
-  - 로컬 `8099` 포트로 Express 서버 임시 구동 완료 및 `192.168.0.33` LocalAI 연동 작명 API 테스트 성공 확인.
+  - 로컬 `8099` 포트로 Express 서버 임시 구동 완료 및 `192.168.y.y` LocalAI 연동 작명 API 테스트 성공 확인.
 * **신규 깃허브 원격 배포 성공:**
-  - 원격 리포지토리 URL을 `https://github.com/dicapriokim/Matter-Code-Vault-AI.git`로 변경 완료.
+  - 원격 리포지토리 URL을 `https://github.com/your-username/Matter-Code-Vault-AI.git`로 변경 완료.
   - 검증 완료된 master 브랜치 소스코드를 신규 깃허브 저장소로 최종 푸쉬(git push origin master) 성공 완료.
 * **장소 및 카테고리 필터 교집합 연동 및 동적 안내 문구 고도화 완료:**
   - `activeLocation` 필터가 `activeCategory`와 교집합(`&&`)으로 결합되어 기기 리스트가 올바르게 렌더링되도록 수정함.
@@ -35,7 +35,7 @@
 * **자동 버전 증가 및 동기화 도구 고도화 완료:**
   - `sync-version.js`를 개편하여 실행 시 기본적으로 `package.json`의 버전을 0.0.1 자동으로 올리도록 설계함 (`--no-bump` 옵션으로 버전 업 방지 기능 탑재).
   - 버전이 증가되면 `package-lock.json`, `config.yaml`, `README.md`, `DOCS.md`, `index.html`, `script.js`, `run.sh` 내부의 하드코딩된 버전 정보들을 일괄 자동으로 갱신(동기화)해주어 배포 시 업데이트 인식이 누락 없이 진행되도록 연동 완료.
-  - 최종 5.1.7 버전업 및 신규 원격 저장소(`https://github.com/dicapriokim/Matter-Code-Vault-AI.git`) 연동 push 완료.
+  - 최종 5.1.7 버전업 및 신규 원격 저장소(`https://github.com/your-username/Matter-Code-Vault-AI.git`) 연동 push 완료.
 * **중복 기기 등록 방지 검증(Duplicate Prevention Validation) 탑재 완료:**
   - 기기 등록/수정 시 다른 기기들과의 QR코드 페이로드 및 11자리 설정 코드를 상호 교차 대조하여 중복 저장을 완전 차단하는 기능을 적용함.
   - 3가지 비정상 중복 상태(1. QR코드 일치하나 설정코드 상이 / 2. QR코드 상이하나 설정코드 일치 / 3. 둘 다 일치)에 대해 맞춤형 경고창(`alert`)을 띄우고 프로세스를 정중하게 중단하여 데이터의 무결성을 지킴.

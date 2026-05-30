@@ -5,7 +5,7 @@
 // APP_VERSION is now managed centrally via script.js and backend API
 
 // --- OLLAMA AI CONFIG ---
-export const OLLAMA_BASE_URL = "http://192.168.0.32:11434";
+export const OLLAMA_BASE_URL = "http://127.0.0.1:11434";
 export const LOCAL_AI_CONFIG = {
     reasoning: { model: "antigravity-model", role: "뇌 (Brain) — 데이터 정제, 오타 교정, 지능형 작명" },
     keepAlive: "5m",

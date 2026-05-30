@@ -130,7 +130,7 @@ app.post('/api/data', (req, res) => {
 // API: AI Proxy (Forward requests to local Ollama)
 app.post('/api/ai', async (req, res) => {
     // 1. Resolve OLLAMA IP (Priority: HA Options > .env > Default)
-    let ollamaIp = process.env.OLLAMA_IP || "192.168.0.32";
+    let ollamaIp = process.env.OLLAMA_IP || "127.0.0.1";
     
     if (fs.existsSync(configPath)) {
         try {
