@@ -1,15 +1,22 @@
 // Constants are now managed globally in script.js
 
-async function askLocalAI(prompt, model, isJson = false) {
+async function askLocalAI(prompt, model, isJson = false, systemInstruction = null) {
     const targetModel = model || window.REASONING_MODEL || "qwen-3b";
     const proxyUrl = window.AI_PROXY_URL || "api/ai";
+    
+    const messages = [];
+    if (systemInstruction) {
+        messages.push({ role: "system", content: systemInstruction });
+    }
+    messages.push({ role: "user", content: prompt });
+
     try {
         const res = await fetch(proxyUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: targetModel,
-                messages: [{ role: "user", content: prompt }],
+                messages: messages,
                 temperature: 0.1
             })
         });
@@ -19,7 +26,7 @@ async function askLocalAI(prompt, model, isJson = false) {
             const errMsg = errData.message || errData.error || `HTTP ${res.status}`;
             console.error("AI Proxy Error:", res.status, errData);
             showToast(`AI 오류: ${errMsg}`);
-            return null;
+            return { error: errMsg };
         }
 
         const data = await res.json();
@@ -28,7 +35,7 @@ async function askLocalAI(prompt, model, isJson = false) {
         if (data.error) {
             console.error("AI Server Error:", data.error);
             showToast(`AI 오류: ${data.error.message || data.error}`);
-            return null;
+            return { error: data.error.message || data.error };
         }
 
         let text = data.choices?.[0]?.message?.content || "";
@@ -36,11 +43,11 @@ async function askLocalAI(prompt, model, isJson = false) {
             const jsonMatch = text.match(/\{[\s\S]*\}/);
             return jsonMatch ? JSON.parse(jsonMatch[0]) : null;
         }
-        return text;
+        return { text: text };
     } catch (e) {
         console.error("AI Error:", e);
         showToast("AI 네트워크 요청 실패");
-        return null;
+        return { error: e.message || "네트워크 요청 실패" };
     }
 }
 
@@ -68,18 +75,21 @@ async function sendAiQuery() {
     output.scrollTop = output.scrollHeight;
     input.value = '';
 
-    const systemInstruction = "너는 스마트홈, IoT, Matter 표준 전문 AI 어시스턴트야. 별도의 언급이 없더라도 모든 답변은 스마트홈, 홈 자동화, IoT 기기 맥락에서 전문적으로 답변해줘. 브랜드명(예: 아카라, 필립스 휴 등)은 일반 명사가 아닌 IoT 제품 브랜드로 인식해야 해. ";
+    const systemInstruction = "너는 스마트홈, IoT, Matter 표준 전문 AI 어시스턴트야. 별도의 언급이 없더라도 모든 답변은 스마트홈, 홈 자동화, IoT 기기 맥락에서 전문적으로 답변해줘. 브랜드명(예: 아카라, 필립스 휴 등)은 일반 명사가 아닌 IoT 제품 브랜드로 인식해야 해.";
     const model = window.REASONING_MODEL || "qwen-3b";
-    const response = await askLocalAI(systemInstruction + query, model, false);
+    
+    // Pass systemInstruction cleanly
+    const response = await askLocalAI(query, model, false, systemInstruction);
 
     const loadingEl = document.getElementById(loadingId);
     if (loadingEl) loadingEl.remove();
 
-    if (response) {
-        const html = marked.parse(response);
+    if (response && response.text) {
+        const html = marked.parse(response.text);
         output.innerHTML += `<div class="mb-4 text-left"><div class="bg-white border border-slate-200 p-3 rounded-xl inline-block text-left prose-sm max-w-none">${html}</div></div>`;
     } else {
-        output.innerHTML += `<div class="mb-4 text-left"><span class="text-red-400 text-xs">AI 응답 실패</span></div>`;
+        const errorMsg = response?.error || "응답 내용이 없습니다.";
+        output.innerHTML += `<div class="mb-4 text-left"><span class="text-red-400 text-xs font-bold bg-red-50 p-2 rounded-lg border border-red-100 inline-block">AI 응답 실패: ${errorMsg}</span></div>`;
     }
     output.scrollTop = output.scrollHeight;
 }
@@ -106,9 +116,10 @@ async function suggestDeviceName() {
 
         console.log("[AI-Naming] Requesting suggestion for:", { manufacturer, type, location });
         const model = window.REASONING_MODEL || "qwen-3b";
-        const suggestion = await askLocalAI(prompt, model, false);
+        const result = await askLocalAI(prompt, model, false);
         
-        if (suggestion !== null) {
+        if (result && result.text !== undefined) {
+            const suggestion = result.text;
             if (suggestion.trim() && nameInput) { 
                 console.log("[AI-Naming] Success:", suggestion);
                 nameInput.value = suggestion.trim(); 
@@ -120,7 +131,7 @@ async function suggestDeviceName() {
             }
         } else {
             // Specific error toast was already shown by askLocalAI
-            if(nameInput) nameInput.placeholder = "오류 발생 (로그를 확인하세요)";
+            if(nameInput) nameInput.placeholder = `오류: ${result?.error || "요청 실패"}`;
         }
     } catch (err) {
         console.error("[AI-Naming] Error:", err);
