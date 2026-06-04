@@ -51,7 +51,7 @@ https://github.com/your-username/Matter-Code-Vault-AI.git
 ### 🧠 Ollama 로컬 AI 서버 구축 (AI 사전 작업)
 
 AI 기반의 OCR 오인식 교정 및 스마트 작명 추천 기능을 활용하려면, 애드온 사용 전에 로컬 AI 서버가 먼저 기동되어 있어야 합니다:
-* **Ollama 서버 구축**: 외부 클라우드 통신 없이 로컬 환경에서 OpenAI API와 동일한 규격의 엔드포인트를 제공하는 경량 자율형 AI 서버 엔진인 Ollama를 사용합니다.
+* **Ollama 서버 구축**: 외부 클라우드 통신 없이 로컬 환경에서 OpenAI API와 동일한 규격의 엔드포인트를 제공하는 경량 자율형 AI 서버 엔진인 Ollama를 사용합니다. Proxmox VE 등 가상화 환경을 운영하는 경우 [SuperLLM LXC 신규 구축 가이드 문서](https://github.com/dicapriokim/LocalAI-miniPC)를 참고하여 고성능 경량 LXC 컨테이너로 구축할 수 있습니다.
 * **필수 모델 로드**: 구축된 Ollama 서버에 아래 두 가지 모델이 정상적으로 다운로드(pull)되어 작동하는지 확인하십시오:
   - **텍스트 모델**: `qwen2.5:3b` (또는 추론 연산용 동급 초경량 LLM)
   - **비전 모델**: `moondream:latest` (이미지/OCR 판독을 위한 멀티모달 비전 모델)
@@ -130,7 +130,7 @@ https://github.com/your-username/Matter-Code-Vault-AI.git
 ### 🧠 Ollama Server Setup (AI Prerequisites)
 
 To utilize the AI-driven OCR correction and smart naming features, you must set up your local AI server beforehand:
-* **Ollama Server Setup**: Ollama is a lightweight, self-hosted AI server engine that provides OpenAI-compatible API endpoints locally, without communicating with external clouds.
+* **Ollama Server Setup**: Ollama is a lightweight, self-hosted AI server engine that provides OpenAI-compatible API endpoints locally, without communicating with external clouds. If you run a virtualized environment like Proxmox VE, you can refer to the [SuperLLM LXC New Setup Guide Document](https://github.com/dicapriokim/LocalAI-miniPC) to set it up as a high-performance, lightweight LXC container.
 * **Model Load**: Ensure you have successfully loaded the required models on your local AI server:
   - **Text Model**: `qwen2.5:3b` (or equivalent lightweight text model)
   - **Vision Model**: `moondream:latest` (for vision-pass OCR analysis)
